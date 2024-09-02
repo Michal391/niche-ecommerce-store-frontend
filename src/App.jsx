@@ -1,17 +1,14 @@
 import React from 'react';
 import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-dom';
-import Login from './pages/login';
+import Login from './pages/Login';
+import Home from './pages/Home'
 
 const App = () => {
   return (
     <Router>
       <Routes>
         <Route path="/Login" element={<Login />} />
-        {/* Add other routes as needed, for example: */}
-        {/* <Route path="/home" element={<Home />} /> */}
-        {/* <Route path="/products" element={<Products />} /> */}
-        
-        {/* Redirect to login page if no other route matches */}
+        <Route path="/home" element={<Home />} />
         <Route path="*" element={<Navigate to="/Login" replace />} />
       </Routes>
     </Router>
