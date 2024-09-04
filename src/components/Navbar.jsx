@@ -20,7 +20,7 @@ const Navbar = () => {
             <div>
               <Link to="/" className="flex items-center py-4 px-2">
                 <img src={logoImage} alt="Your Logo" className="h-8 w-auto mr-2" />
-                <span className="font-semibold text-gray-500 text-lg">YourLogo</span>
+                {/* <span className="font-semibold text-gray-500 text-lg">YourLogo</span> */}
               </Link>
             </div>
             <div className="hidden md:flex items-center space-x-1">

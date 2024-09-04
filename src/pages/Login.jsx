@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
+import { loginUser, registerUser } from '../services/api';
 
 const Login = () => {
   const [isLogin, setIsLogin] = useState(true);
@@ -39,37 +39,21 @@ const Login = () => {
     setMessage('');
 
     try {
-      let response;
       if (isLogin) {
-        response = await axios.post('http://localhost:3000/login', {
-          email: formData.email,
-          password: formData.password
-        }, {withCredentials: true});
-
-        if(response.status === 200){
-          setMessage('Login Successful!');
-          navigate('/home');
-        }
+        await loginUser(formData.email, formData.password);
+        setMessage('Login Successful!');
+        navigate('/home');
       } else {
         if (formData.password !== formData.confirmPassword) {
           setMessage('Passwords do not match');
           return;
         }
-        response = await axios.post('http://localhost:3000/register', {
-          name: formData.name,
-          email: formData.email,
-          password: formData.password,
-          confirmPassword: formData.confirmPassword
-        });
-
-        if (response.status === 201) {
-          setMessage('Registration successful!');
-          navigate('/home'); // Redirect to home page
-        }
+        await registerUser(formData.name, formData.email, formData.password, formData.confirmPassword);
+        setMessage('Registration successful!');
+        navigate('/home');
       }
     } catch (error) {
       if (error.response && error.response.status === 409) {
-        // Handle 409 Conflict specifically for registration
         setMessage('Email already exists. Please use a different email.');
       } else {
         const errorMsg = isLogin ? 'Login failed. Please try again.' : 'Registration failed. Please try again.';
@@ -79,7 +63,7 @@ const Login = () => {
   };
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-gradient-to-r from-indigo-500 from-10% via-sky-500 via-30% to-emerald-500 to-90%">
+    <div className="flex items-center justify-center min-h-screen bg-gradient-to-r from-zinc-200 from-10% via-gray-100 via-30% to-slate-100 to-90%">
       <div className="w-full max-w-4xl bg-white rounded-xl shadow-2xl overflow-hidden">
         <div className="flex flex-col md:flex-row h-full">
           <motion.div 
