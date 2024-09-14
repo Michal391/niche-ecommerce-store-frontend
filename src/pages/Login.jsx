@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { loginUser, registerUser } from '../services/api';
+import { useUser } from '../contexts/UserContext'; // Import the useUser hook
+import jwtService from '../services/jwtService';
 
 const Login = () => {
   const [isLogin, setIsLogin] = useState(true);

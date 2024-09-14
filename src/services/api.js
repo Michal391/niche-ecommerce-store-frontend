@@ -9,9 +9,11 @@ const api = axios.create({
 
 export const loginUser = async (email, password) => {
   try {
-    const response = await api.post('/login', { email, password });
-    return response.data;
+    const response = await api.post('/login', { email, password }, { withCredentials: true });
+    console.log('API Response:', response); // Log the entire response to inspect
+    return response.data; // Return the data (if any) from the server
   } catch (error) {
+    console.error('Login API error:', error); // Log any errors for debugging
     throw error;
   }
 };
@@ -98,6 +100,38 @@ export const deleteReview = async (productId) => {
     return response.data;
   } catch (error) {
     console.error('Error deleting review:', error.response ? error.response.data : error.message);
+    throw error;
+  }
+};
+
+// New cart related functions
+
+export const getCart = async () => {
+  try {
+    const response = await api.get('/cart');
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching cart:', error);
+    throw error;
+  }
+};
+
+export const addToCart = async (productId, quantity) => {
+  try {
+    const response = await api.post('/cart/add', { productId, quantity });
+    return response.data;
+  } catch (error) {
+    console.error('Error adding to cart:', error);
+    throw error;
+  }
+};
+
+export const removeFromCart = async (productId) => {
+  try {
+    const response = await api.delete(`/cart/remove/${productId}`);
+    return response.data;
+  } catch (error) {
+    console.error('Error removing from cart:', error);
     throw error;
   }
 };

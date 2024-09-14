@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowLeft, ShoppingCart, ChevronUp, ChevronDown, Star, ChevronRight, Edit, Trash } from 'lucide-react';
 import { getProductInformation, getProductReviews, addReview, updateReview, deleteReview, getUserProductReview } from '../services/api';
 import Navbar from '../components/Navbar';
+import { useCart } from '../contexts/CartContext';
 
 const Review = ({ review, currentUserId, onEdit, onDelete }) => (
     <div className="border-b border-gray-200 pb-4 mb-4 last:border-b-0 last:pb-0 last:mb-0">
@@ -79,6 +80,7 @@ const Review = ({ review, currentUserId, onEdit, onDelete }) => (
   const ProductDetails = () => {
     const { id } = useParams(); // Extract id from URL params
     const navigate = useNavigate();
+    const { addItemToCart } = useCart();
     
     const [product, setProduct] = useState(null);
     const [selectedVariant, setSelectedVariant] = useState(null);
@@ -94,6 +96,10 @@ const Review = ({ review, currentUserId, onEdit, onDelete }) => (
     const [editingReview, setEditingReview] = useState(null);
     const [currentUserId, setCurrentUserId] = useState(null);
     const [userReview, setUserReview] = useState(null);
+
+    const handleAddToCart = () => {
+      addItemToCart(product.id, quantity);
+    };
   
     useEffect(() => {
       fetchProductDetails();
@@ -194,10 +200,6 @@ const Review = ({ review, currentUserId, onEdit, onDelete }) => (
 
   const handleVariantChange = (variant) => {
     setSelectedVariant(variant);
-  };
-
-  const handleAddToCart = () => {
-    console.log('Add to cart:', { ...product, variant: selectedVariant, quantity });
   };
 
   const handleBuyNow = () => {
