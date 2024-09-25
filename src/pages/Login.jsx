@@ -3,7 +3,6 @@ import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { loginUser, registerUser } from '../services/api';
 import { useUser } from '../contexts/UserContext'; // Import the useUser hook
-import jwtService from '../services/jwtService';
 
 const Login = () => {
   const [isLogin, setIsLogin] = useState(true);
@@ -14,7 +13,7 @@ const Login = () => {
     confirmPassword: ''
   });
   const [message, setMessage] = useState('');
-
+  const { login } = useUser();
   const navigate = useNavigate();
 
   const toggleView = () => {
@@ -42,9 +41,10 @@ const Login = () => {
 
     try {
       if (isLogin) {
-        await loginUser(formData.email, formData.password);
+        const loginData = await loginUser(formData.email, formData.password);
         setMessage('Login Successful!');
         navigate('/home');
+        console.log("Logged in user id:" + loginData.userId);
       } else {
         if (formData.password !== formData.confirmPassword) {
           setMessage('Passwords do not match');
