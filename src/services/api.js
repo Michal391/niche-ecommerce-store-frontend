@@ -136,4 +136,16 @@ export const removeFromCart = async (productId) => {
   }
 };
 
+// get user profile name, surname, email
+export const getUserProfile = async (userId) => {
+  try {
+    const response = await api.get(`/users/${userId}`); // Assuming this is your API endpoint for user profile
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching user profile:', error.response ? error.response.data : error.message);
+    throw error;
+  }
+};
+
+
 export default api;
