@@ -5,6 +5,7 @@ import { motion } from 'framer-motion';
 import { fadeIn } from '../utils/motion';
 import { getAllProducts } from '../services/api';
 import ServiceCard from '../components/ProductCard';
+import Footer from '../components/Footer';
 
 const Products = () => {
   const [products, setProducts] = useState([]);
@@ -60,9 +61,7 @@ const Products = () => {
           </motion.div>
         )}
       </div>
-      <footer className="bg-gray-800 text-white text-center py-4 mt-auto">
-        <p>&copy; 2024 Your Company Name. All rights reserved.</p>
-      </footer>
+      <Footer/>
     </div>
   );
 };

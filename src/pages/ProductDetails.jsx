@@ -1,198 +1,47 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowLeft, ShoppingCart, ChevronUp, ChevronDown, Star, ChevronRight, Edit, Trash } from 'lucide-react';
-import { getProductInformation, getProductReviews, addReview, updateReview, deleteReview, getUserProductReview } from '../services/api';
+import { motion } from 'framer-motion';
+import { ArrowLeft, ShoppingCart, ChevronUp, ChevronDown } from 'lucide-react';
+import { getProductInformation } from '../services/api';
 import Navbar from '../components/Navbar';
 import { useCart } from '../contexts/CartContext';
+import Footer from '../components/Footer';
+import { ReviewSection } from '../components/Review'; // Import ReviewSection
+import { useUser } from '../contexts/UserContext';
 
-const Review = ({ review, currentUserId, onEdit, onDelete }) => (
-    <div className="border-b border-gray-200 pb-4 mb-4 last:border-b-0 last:pb-0 last:mb-0">
-      <div className="flex items-center mb-2 justify-between">
-        <div>
-          <div className="flex mr-2">
-            {[...Array(5)].map((_, i) => (
-              <Star key={i} className={`h-5 w-5 ${i < review.rating ? 'text-yellow-400 fill-current' : 'text-gray-300'}`} />
-            ))}
-          </div>
-          <span className="font-semibold">{review.title}</span>
-        </div>
-        {currentUserId === review.userId && onEdit && onDelete && (
-          <div>
-            <button onClick={() => onEdit(review)} className="mr-2 text-blue-500">
-              <Edit size={16} />
-            </button>
-            <button onClick={() => onDelete(review.id)} className="text-red-500">
-              <Trash size={16} />
-            </button>
-          </div>
-        )}
-      </div>
-      <p className="text-gray-600 mb-2">{review.reviewText}</p>
-      <p className="text-gray-500 text-sm">
-        Posted on: {new Date(review.createdAt).toLocaleString()}
-      </p>
-    </div>
-  );
+const ProductDetails = () => {
+  const { id } = useParams(); // Extract id from URL params
+  const navigate = useNavigate();
+  const { addItemToCart } = useCart();
+  const { userId } = useUser();
 
-  const ReviewForm = ({ onSubmit, initialReview = null }) => {
-    const [title, setTitle] = useState(initialReview ? initialReview.title : '');
-    const [rating, setRating] = useState(initialReview ? initialReview.rating : 5);
-    const [reviewText, setReviewText] = useState(initialReview ? initialReview.reviewText : '');
-  
-    const handleSubmit = (e) => {
-      e.preventDefault();
-      onSubmit({ title, rating, reviewText });
-    };
-  
-    return (
-      <form onSubmit={handleSubmit} className="mt-4">
-        <input
-          type="text"
-          value={title}
-          onChange={(e) => setTitle(e.target.value)}
-          placeholder="Review Title"
-          className="w-full p-2 mb-2 border rounded"
-          required
-        />
-        <div className="mb-2">
-          <label>Rating: </label>
-          <select value={rating} onChange={(e) => setRating(Number(e.target.value))}>
-            {[1, 2, 3, 4, 5].map(num => (
-              <option key={num} value={num}>{num}</option>
-            ))}
-          </select>
-        </div>
-        <textarea
-          value={reviewText}
-          onChange={(e) => setReviewText(e.target.value)}
-          placeholder="Your review"
-          className="w-full p-2 mb-2 border rounded"
-          required
-        />
-        <button type="submit" className="bg-blue-500 text-white px-4 py-2 rounded">
-          {initialReview ? 'Update Review' : 'Submit Review'}
-        </button>
-      </form>
-    );
+  const [product, setProduct] = useState(null);
+  const [selectedVariant, setSelectedVariant] = useState(null);
+  const [quantity, setQuantity] = useState(1);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+  const [selectedImageIndex, setSelectedImageIndex] = useState(0);
+
+  useEffect(() => {
+    fetchProductDetails(); // Example user ID
+  }, [id]);
+
+  const fetchProductDetails = async () => {
+    try {
+      setLoading(true);
+      const productData = await getProductInformation(id);
+      setProduct(productData);
+      setSelectedVariant(productData.variants[0]);
+      setLoading(false);
+    } catch (err) {
+      setError('Failed to fetch product details. Please try again later.');
+      setLoading(false);
+    }
   };
 
-  const ProductDetails = () => {
-    const { id } = useParams(); // Extract id from URL params
-    const navigate = useNavigate();
-    const { addItemToCart } = useCart();
-    
-    const [product, setProduct] = useState(null);
-    const [selectedVariant, setSelectedVariant] = useState(null);
-    const [quantity, setQuantity] = useState(1);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState('');
-    const [selectedImageIndex, setSelectedImageIndex] = useState(0);
-    const [reviews, setReviews] = useState([]);
-    const [isReviewsOpen, setIsReviewsOpen] = useState(false);
-    const [page, setPage] = useState(1);
-    const [hasMore, setHasMore] = useState(true);
-    const [isAddingReview, setIsAddingReview] = useState(false);
-    const [editingReview, setEditingReview] = useState(null);
-    const [currentUserId, setCurrentUserId] = useState(null);
-    const [userReview, setUserReview] = useState(null);
-
-    const handleAddToCart = () => {
-      addItemToCart(product.id, quantity);
-    };
-  
-    useEffect(() => {
-      fetchProductDetails();
-      // Set current user ID here based on your auth system
-      setCurrentUserId("13d55c8d-ea2d-4261-a5fa-0a01212eecef"); // Example user ID
-    }, [id]);
-
-    useEffect(() => {
-      if (currentUserId) {
-        fetchUserReview();
-      }
-    }, [id, currentUserId]);
-
-    const fetchUserReview = async () => {
-      try {
-        const review = await getUserProductReview(id, currentUserId);
-        setUserReview(review);
-      } catch (error) {
-        console.error('Error fetching user review:', error);
-      }
-    };
-
-    const fetchReviews = async () => {
-      try {
-        const newReviews = await getProductReviews(id, page);
-        setReviews(prevReviews => [...prevReviews, ...newReviews]);
-        setHasMore(newReviews.length === 5); // Assuming we're fetching 5 reviews at a time
-        setPage(prevPage => prevPage + 1);
-      } catch (error) {
-        console.error('Error fetching reviews:', error);
-      }
-    };
-
-      const handleReviewsToggle = () => {
-        setIsReviewsOpen(!isReviewsOpen);
-        if (!isReviewsOpen && reviews.length === 0) {
-          fetchReviews();
-        }
-      };
-    
-      const handleAddReview = async (reviewData) => {
-        try {
-          const response = await addReview(id, reviewData);
-          setUserReview(response.review);
-          setReviews(prevReviews => [response.review, ...prevReviews]);
-          setIsAddingReview(false);
-        } catch (error) {
-          console.error('Error adding review:', error);
-          // Optionally, show an error message to the user
-        }
-      };
-    
-      const handleEditReview = (review) => {
-        setEditingReview(review);
-      };
-    
-      const handleUpdateReview = async (reviewData) => {
-        try {
-          const updatedReview = await updateReview(id, reviewData);
-          setUserReview(updatedReview);
-          setReviews(prevReviews => prevReviews.map(review => 
-            review.id === updatedReview.id ? updatedReview : review
-          ));
-          setEditingReview(null);
-        } catch (error) {
-          console.error('Error updating review:', error);
-          // Optionally, show an error message to the user
-        }
-      };
-    
-      const handleDeleteReview = async () => {
-        try {
-          await deleteReview(id);
-          setUserReview(null);
-          setReviews(prevReviews => prevReviews.filter(review => review.userId !== currentUserId));
-        } catch (error) {
-          console.error('Error deleting review:', error);
-          // Optionally, show an error message to the user
-        }
-      };
-
-      const fetchProductDetails = async () => {
-        try {
-          setLoading(true);
-          const productData = await getProductInformation(id);
-          setProduct(productData);
-          setSelectedVariant(productData.variants[0]);
-          setLoading(false);
-        } catch (err) {
-          setError('Failed to fetch product details. Please try again later.');
-          setLoading(false);
-        }
-      };
+  const handleAddToCart = () => {
+    addItemToCart(product.id, quantity);
+  };
 
   const handleQuantityChange = (e) => {
     setQuantity(Math.max(1, parseInt(e.target.value) || 1));
@@ -202,11 +51,11 @@ const Review = ({ review, currentUserId, onEdit, onDelete }) => (
     setSelectedVariant(variant);
   };
 
-  const handleBuyNow = () => {
-    console.log('Buy now:', { ...product, variant: selectedVariant, quantity });
-  };
+  if (loading) return <div className="min-h-screen flex items-center justify-center">Loading product details...</div>;
+  if (error) return <div className="min-h-screen flex items-center justify-center text-red-500">{error}</div>;
+  if (!product) return null;
 
-  const getStockDisplay = () => {
+  const stockInfo = () => {
     if (typeof product.stock !== 'number') {
       return { text: 'Stock information unavailable', color: 'text-gray-500' };
     }
@@ -217,13 +66,6 @@ const Review = ({ review, currentUserId, onEdit, onDelete }) => (
     }
   };
 
-  if (loading) return <div className="min-h-screen flex items-center justify-center">Loading product details...</div>;
-  if (error) return <div className="min-h-screen flex items-center justify-center text-red-500">{error}</div>;
-  if (!product) return null;
-
-  const stockInfo = getStockDisplay();
-
-  // Placeholder for multiple images
   const images = [product.imageUrl, product.thumbnailUrl];
 
   return (
@@ -236,29 +78,27 @@ const Review = ({ review, currentUserId, onEdit, onDelete }) => (
         className="container mx-auto px-4 py-8"
       >
         <div className="bg-white shadow overflow-hidden sm:rounded-lg">
-            <div className="px-4 py-5 sm:px-6 flex items-center justify-between">
-                <div className="relative group">
-                <button 
-                    onClick={() => navigate('/products')} 
-                    className="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-gray-500 bg-white hover:text-gray-700 focus:outline-none transition-all duration-300 ease-in-out overflow-hidden"
-                >
-                    <ArrowLeft className="h-5 w-5" />
-                    <span className="max-w-0 overflow-hidden whitespace-nowrap group-hover:max-w-xs transition-all duration-300 ease-in-out ml-0 group-hover:ml-2">
-                    Back to Products
-                    </span>
-                </button>
-                </div>
-                <div className="text-right">
-                <h2 className="text-2xl font-bold leading-7 text-gray-900 sm:text-3xl sm:truncate">{product.name}</h2>
-                <p className="mt-1 max-w-2xl text-sm text-gray-500">{product.brand}</p>
-                </div>
+          <div className="px-4 py-5 sm:px-6 flex items-center justify-between">
+            <div className="relative group">
+              <button
+                onClick={() => navigate('/products')}
+                className="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-gray-500 bg-white hover:text-gray-700 focus:outline-none transition-all duration-300 ease-in-out overflow-hidden"
+              >
+                <ArrowLeft className="h-5 w-5" />
+                <span className="max-w-0 overflow-hidden whitespace-nowrap group-hover:max-w-xs transition-all duration-300 ease-in-out ml-0 group-hover:ml-2">
+                  Back to Products
+                </span>
+              </button>
             </div>
-          
+            <div className="text-right">
+              <h2 className="text-2xl font-bold leading-7 text-gray-900 sm:text-3xl sm:truncate">{product.name}</h2>
+              <p className="mt-1 max-w-2xl text-sm text-gray-500">{product.brand}</p>
+            </div>
+          </div>
+
           <div className="border-t border-gray-200 px-4 py-5 sm:p-0">
             <div className="sm:flex">
-              {/* Left side - Product Images */}
               <div className="sm:w-1/2 p-6 flex">
-                {/* Vertical Carousel */}
                 <div className="w-1/5 mr-4">
                   <button className="w-full mb-2 text-gray-500" onClick={() => setSelectedImageIndex(Math.max(0, selectedImageIndex - 1))}>
                     <ChevronUp />
@@ -278,17 +118,15 @@ const Review = ({ review, currentUserId, onEdit, onDelete }) => (
                     <ChevronDown />
                   </button>
                 </div>
-                {/* Main Image */}
                 <div className="w-4/5">
-                  <img src={images[selectedImageIndex]} alt={product.name} className="w-full h-80 object-cover rounded-lg"/>
+                  <img src={images[selectedImageIndex]} alt={product.name} className="w-full h-80 object-cover rounded-lg" />
                 </div>
               </div>
 
-              {/* Right side - Product Details and Purchase Options */}
               <div className="sm:w-1/2 p-6">
                 <div className="mb-6">
                   <p className="text-3xl font-bold text-gray-900">${selectedVariant.price.toFixed(2)}</p>
-                  <p className={`mt-2 text-sm font-semibold ${stockInfo.color}`}>{stockInfo.text}</p>
+                  <p className={`mt-2 text-sm font-semibold ${stockInfo().color}`}>{stockInfo().text}</p>
                 </div>
 
                 <div className="mb-6">
@@ -334,7 +172,7 @@ const Review = ({ review, currentUserId, onEdit, onDelete }) => (
                   </button>
                   <button
                     type="button"
-                    onClick={handleBuyNow}
+                    onClick={() => console.log('Buy now')}
                     className="inline-flex items-center justify-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
                   >
                     Buy Now
@@ -343,7 +181,7 @@ const Review = ({ review, currentUserId, onEdit, onDelete }) => (
               </div>
             </div>
 
-            {/* Product Description and Specifications */}
+            {/* Product Description */}
             <dl className="sm:divide-y sm:divide-gray-200">
               <div className="py-5 sm:px-6">
                 <dt className="text-sm font-medium text-gray-500 mb-2">Description</dt>
@@ -367,71 +205,13 @@ const Review = ({ review, currentUserId, onEdit, onDelete }) => (
                 </dd>
               </div>
             </dl>
-            <div className="border-t border-gray-200 px-4 py-5 sm:p-6">
-              <button
-                className="flex justify-between items-center w-full"
-                onClick={handleReviewsToggle}
-              >
-                <span className="text-lg font-medium text-gray-900">Customer Reviews</span>
-                <ChevronRight className={`h-5 w-5 text-gray-500 transform transition-transform duration-200 ${isReviewsOpen ? 'rotate-90' : ''}`} />
-              </button>
-              <AnimatePresence>
-                {isReviewsOpen && (
-                  <motion.div
-                    initial={{ height: 0, opacity: 0 }}
-                    animate={{ height: 'auto', opacity: 1 }}
-                    exit={{ height: 0, opacity: 0 }}
-                    transition={{ duration: 0.3 }}
-                    className="mt-4 overflow-hidden"
-                  >
-                    {!userReview && !isAddingReview && (
-                      <button 
-                        onClick={() => setIsAddingReview(true)} 
-                        className="mb-4 bg-green-500 text-white px-4 py-2 rounded"
-                      >
-                        Add Review
-                      </button>
-                    )}
-                    {isAddingReview && (
-                      <ReviewForm onSubmit={handleAddReview} />
-                    )}
-                    {editingReview && (
-                      <ReviewForm onSubmit={handleUpdateReview} initialReview={editingReview} />
-                    )}
-                    {userReview && !editingReview && (
-                      <Review 
-                        review={userReview}
-                        currentUserId={currentUserId}
-                        onEdit={handleEditReview}
-                        onDelete={handleDeleteReview}
-                      />
-                    )}
-                    {reviews.filter(review => review.id !== userReview?.id).map((review) => (
-                      <Review 
-                        key={review.id} 
-                        review={review} 
-                        currentUserId={currentUserId}
-                        // Don't pass onEdit and onDelete for non-user reviews
-                      />
-                    ))}
-                    {hasMore && (
-                      <button 
-                        onClick={fetchReviews} 
-                        className="mt-4 bg-blue-500 text-white px-4 py-2 rounded"
-                      >
-                        Load More Reviews
-                      </button>
-                    )}
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </div>
           </div>
+
+          {/* Reviews Section */}
+          <ReviewSection productId={id} currentUserId={userId} />
         </div>
       </motion.div>
-      <footer className="bg-gray-800 text-white text-center py-4 mt-8">
-        <p>&copy; 2024 Your Company Name. All rights reserved.</p>
-      </footer>
+      <Footer />
     </div>
   );
 };

@@ -128,7 +128,9 @@ export const addToCart = async (productId, quantity) => {
 
 export const removeFromCart = async (productId) => {
   try {
-    const response = await api.delete(`/cart/remove/${productId}`);
+    const response = await api.post('/cart/remove', {
+      productId,  // Pass `productId` in the `data` field for DELETE requests
+    });
     return response.data;
   } catch (error) {
     console.error('Error removing from cart:', error);
@@ -137,9 +139,9 @@ export const removeFromCart = async (productId) => {
 };
 
 // get user profile name, surname, email
-export const getUserProfile = async (userId) => {
+export const getUserProfile = async () => {
   try {
-    const response = await api.get(`/users/${userId}`); // Assuming this is your API endpoint for user profile
+    const response = await api.get(`/user/profile`); // Assuming this is your API endpoint for user profile
     return response.data;
   } catch (error) {
     console.error('Error fetching user profile:', error.response ? error.response.data : error.message);

@@ -44,14 +44,16 @@ const Login = () => {
         const loginData = await loginUser(formData.email, formData.password);
         setMessage('Login Successful!');
         navigate('/home');
+        login(loginData.userId);
         console.log("Logged in user id:" + loginData.userId);
       } else {
         if (formData.password !== formData.confirmPassword) {
           setMessage('Passwords do not match');
           return;
         }
-        await registerUser(formData.name, formData.email, formData.password, formData.confirmPassword);
+        const registerData = await registerUser(formData.name, formData.email, formData.password, formData.confirmPassword);
         setMessage('Registration successful!');
+        login(registerData.userId); // Call the login function from UserContext with the userId
         navigate('/home');
       }
     } catch (error) {

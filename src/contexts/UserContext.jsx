@@ -10,7 +10,7 @@ export const UserProvider = ({ children }) => {
   const login = async (userId) => {
     setUserId(userId);
     // Optionally fetch user profile upon login
-    const userProfile = await getUserProfile(userId);
+    const userProfile = await getUserProfile();
     setUser(userProfile); // Store the user profile in state
   };
 
@@ -21,7 +21,7 @@ export const UserProvider = ({ children }) => {
 
   useEffect(() => {
     if (userId) {
-      getUserProfile(userId).then((userProfile) => setUser(userProfile)); // Fetch the profile if the user ID is set
+      getUserProfile().then((userProfile) => setUser(userProfile)); // Fetch the profile if the user ID is set
     }
   }, [userId]);
 
