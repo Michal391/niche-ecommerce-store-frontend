@@ -1,6 +1,6 @@
 import React from 'react';
 import Navbar from '../components/Navbar';
-
+import Footer from '../components/Footer';
 
 const Home = () => {
   return (
@@ -44,9 +44,7 @@ const Home = () => {
         </div>
       </div>
       {/* Footer */}
-      <footer className="bg-gray-800 text-white text-center py-4">
-        <p>&copy; 2024 Your Company Name. All rights reserved.</p>
-      </footer>
+      <Footer/>
     </div>
   );
 };
