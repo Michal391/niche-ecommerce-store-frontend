@@ -40,6 +40,12 @@ export const CartProvider = ({ children }) => {
     }
   }, [fetchCart]);
 
+  const clearCart = useCallback(() => {
+    setCart(null);
+    setCartItemCount(0);
+    console.log("Cart cleared");
+  }, []);
+
   const removeItemFromCart = useCallback(async (productId) => {
     try {
       await removeFromCart(productId);
@@ -55,7 +61,7 @@ export const CartProvider = ({ children }) => {
   }, [fetchCart]);
 
   return (
-    <CartContext.Provider value={{ cart, cartItemCount, error, fetchCart, addItemToCart, removeItemFromCart }}>
+    <CartContext.Provider value={{ cart, cartItemCount, error, fetchCart, addItemToCart, removeItemFromCart, clearCart }}>
       {children}
     </CartContext.Provider>
   );

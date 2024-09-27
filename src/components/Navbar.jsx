@@ -8,7 +8,7 @@ import logoImage from '../assets/mobile.png'; // Adjust the path as needed
 const Navbar = () => {
   const location = useLocation();
   const navigate = useNavigate();
-  const { cartItemCount } = useCart();
+  const { cartItemCount, clearCart, fetchCart } = useCart();
   const { user, logout } = useUser(); // Get user and logout function
 
   const navItems = [
@@ -21,8 +21,16 @@ const Navbar = () => {
 
   const handleLogout = () => {
     logout(); // Log out the user
+    clearCart();
     navigate('/login'); // Redirect to login page after logout
   };
+
+  const handleGetCart = () => {
+    if(user){
+      fetchCart();
+      navigate('/cart')
+    }
+  }
 
   return (
     <nav className="bg-white shadow-lg">
@@ -53,7 +61,7 @@ const Navbar = () => {
           </div>
           <div className="hidden md:flex items-center space-x-3">
             <button
-              onClick={() => navigate('/cart')}
+              onClick={handleGetCart}
               className="relative py-2 px-3 font-medium text-gray-500 rounded hover:bg-blue-500 hover:text-white transition duration-300"
             >
               <ShoppingCart className="h-5 w-5" />

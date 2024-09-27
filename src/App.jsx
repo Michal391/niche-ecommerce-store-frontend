@@ -10,8 +10,8 @@ import { UserProvider } from './contexts/UserContext';
 
 const App = () => {
   return (
-    <UserProvider>
-      <CartProvider>
+    <CartProvider>
+      <UserProvider>
         <Router>
           <Routes>
             <Route path="/Login" element={<Login />} />
@@ -22,8 +22,8 @@ const App = () => {
             <Route path="*" element={<Navigate to="/Login" replace />} />
           </Routes>
         </Router>
-      </CartProvider>
-    </UserProvider>
+      </UserProvider>
+    </CartProvider>
   );
 };
 

@@ -1,17 +1,20 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { getUserProfile } from '../services/api'; // Assuming you'll write this function to fetch the user profile
+import { useCart } from './CartContext';
 
 const UserContext = createContext();
 
 export const UserProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [userId, setUserId] = useState(null); // Store the user ID
+  const {fetchCart} = useCart();
 
   const login = async (userId) => {
     setUserId(userId);
     // Optionally fetch user profile upon login
     const userProfile = await getUserProfile();
     setUser(userProfile); // Store the user profile in state
+    fetchCart();
   };
 
   const logout = async () => {
