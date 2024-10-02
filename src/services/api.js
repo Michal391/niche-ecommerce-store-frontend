@@ -81,9 +81,9 @@ export const getProductReviews = async (productId) => {
   }
 };
 
-export const getUserProductReview = async (productId, userId) => {
+export const getUserProductReview = async (productId) => {
   try {
-    const response = await api.get(`/products/${productId}/reviews/${userId}`);
+    const response = await api.get(`/products/${productId}/reviews/user`);
     return response.data;
   } catch (error) {
     if (error.response && error.response.data.error === "user review not found for product") {
@@ -134,6 +134,16 @@ export const removeFromCart = async (productId) => {
     return response.data;
   } catch (error) {
     console.error('Error removing from cart:', error);
+    throw error;
+  }
+};
+
+export const reduceItemQuantity = async (productId) => {
+  try {
+    const response = await api.post('/cart/reduce', { productId });
+    return response.data;
+  } catch (error) {
+    console.error('Error reducing item quantity:', error);
     throw error;
   }
 };

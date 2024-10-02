@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useCallback, useEffect } from 'react';
-import { addToCart, removeFromCart, getCart } from '../services/api';
+import { addToCart, removeFromCart, getCart, reduceItemQuantity } from '../services/api';
 
 const CartContext = createContext();
 
@@ -56,12 +56,26 @@ export const CartProvider = ({ children }) => {
     }
   }, [fetchCart]);
 
+  const reduceItemInCart = useCallback(
+    async (productId) => {
+      try {
+        await reduceItemQuantity(productId);
+        await fetchCart();
+        setError(null);
+      } catch (error) {
+        console.error('Error reducing item quantity in cart:', error);
+        setError('Failed to reduce item quantity in cart. Please try again.');
+      }
+    },
+    [fetchCart]
+  );
+
   useEffect(() => {
     fetchCart();
   }, [fetchCart]);
 
   return (
-    <CartContext.Provider value={{ cart, cartItemCount, error, fetchCart, addItemToCart, removeItemFromCart, clearCart }}>
+    <CartContext.Provider value={{ cart, cartItemCount, error, fetchCart, addItemToCart, removeItemFromCart, clearCart, reduceItemInCart }}>
       {children}
     </CartContext.Provider>
   );
