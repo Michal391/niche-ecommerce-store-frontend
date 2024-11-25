@@ -201,6 +201,23 @@ const ReviewSection = ({ productId }) => {
     }
   };
 
+  // Comparison function to identify the user's review
+  const isSameReview = (review1, review2) => {
+    if (!review1 || !review2) return false;
+    return (
+      review1.title === review2.title &&
+      review1.reviewText === review2.reviewText &&
+      review1.rating === review2.rating &&
+      review1.userName === review2.userName &&
+      review1.createdAt === review2.createdAt
+    );
+  };
+
+  // Filter out the user's own review from the list of all reviews
+  const filteredReviews = reviews.filter(
+    (review) => !isSameReview(review, userReview)
+  );
+
   return (
     <div className="border-t border-gray-200 px-4 py-5 sm:p-6">
       {/* Toggle Button */}
@@ -253,10 +270,10 @@ const ReviewSection = ({ productId }) => {
               </button>
             )}
 
-            {/* All Reviews (including user's own review) */}
-            {reviews.map((review, index) => (
+            {/* All Reviews (excluding user's own review) */}
+            {filteredReviews.map((review, index) => (
               <Review
-                key={`${review.userId}-${review.createdAt}-${index}`}
+                key={`${review.userName}-${review.createdAt}-${index}`}
                 review={review}
               />
             ))}
